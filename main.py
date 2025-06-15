@@ -8,9 +8,11 @@ import my_agents  # Import your agent modules
 import re
 import time
 
+from dotenv import load_dotenv
+load_dotenv()  # Only affects local environment
 
-novita_key = st.secrets["NOVITA_API_KEY"]
-gemini_key = st.secrets["GEMINI_API_KEY"]
+novita_key = st.secrets.get("NOVITA_API_KEY", os.getenv("NOVITA_API_KEY"))
+gemini_key = st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 
 st.set_page_config(page_title="AI README Generator", layout="wide")
 
