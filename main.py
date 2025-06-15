@@ -7,6 +7,7 @@ import mimetypes
 import my_agents  # Import your agent modules
 import re
 import time
+from io import BytesIO
 
 # Optional dotenv loading for local development
 if os.getenv("LOCAL_DEV"):
@@ -97,22 +98,17 @@ def process_files(all_files, analysis, tone, project_name):
         formatted_text, _, _ = my_agents.formatter.format_readme(
             analysis, summaries, project_name=project_name, tone=tone
         )
-        readme_md = formatted_text
 
         progress.progress(100, text="Done!")
         st.success("README generated!")
 
         st.subheader("README.md Preview")
-        st.markdown(readme_md)
+        st.markdown(formatted_text)
 
-        readme_md = st.text_area("Edit README.md", value=readme_md, height=500)
+        # Store in session_state for edit/download section
+        st.session_state["generated_readme"] = True
+        st.session_state["final_readme"] = formatted_text
 
-        st.download_button(
-            label="📥 Download README.md",
-            data=readme_md,
-            file_name="README.md",
-            mime="text/markdown"
-        )
 
 # --- File Handling Logic ---
 if uploaded_files:
@@ -126,6 +122,23 @@ if uploaded_files:
 
             if st.button("Generate README", key="generate_readme_btn_upload"):
                 process_files(all_files, analysis, tone, project_name)
+
         except Exception as e:
             st.error(f"Failed to process uploaded files: {str(e)}")
             st.code(traceback.format_exc())
+
+# --- Persistent Editable Area and Download ---
+if st.session_state.get("generated_readme"):
+    st.subheader("✏️ Edit Final README.md")
+    default_text = st.session_state.get("final_readme", "")
+
+    edited_readme = st.text_area("Make changes to your README here:", value=default_text, height=500, key="readme_editor")
+    st.session_state["final_readme"] = edited_readme
+
+    st.download_button(
+        label="📥 Download README.md",
+        data=BytesIO(edited_readme.encode("utf-8")),
+        file_name="README.md",
+        mime="text/markdown",
+        key="download_btn"
+    )
