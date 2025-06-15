@@ -13,6 +13,8 @@ load_dotenv()  # Only affects local environment
 
 import subprocess
 subprocess.run(["pip", "show", "openai"])
+import openai; print("✅ openai version:", openai.__version__)
+
 
 
 novita_key = st.secrets.get("NOVITA_API_KEY", os.getenv("NOVITA_API_KEY"))
