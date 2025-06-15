@@ -8,15 +8,15 @@ import my_agents  # Import your agent modules
 import re
 import time
 
-from dotenv import load_dotenv
-load_dotenv()  # Only affects local environment
+# Optional dotenv loading for local development
+if os.getenv("LOCAL_DEV"):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
 
-import subprocess
-subprocess.run(["pip", "show", "openai"])
-import openai; print("✅ openai version:", openai.__version__)
-
-
-
+# Get secrets from st.secrets or fallback to os.environ
 novita_key = st.secrets.get("NOVITA_API_KEY", os.getenv("NOVITA_API_KEY"))
 gemini_key = st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 
@@ -33,7 +33,6 @@ st.markdown("""
 st.title("📄 AI README Generator")
 
 tone = st.sidebar.selectbox("Select README Tone/Style", ["Professional", "Friendly", "Minimal"])
-
 project_name = st.text_input("Enter your project name:", value="My Project")
 
 uploaded_files = st.file_uploader(
@@ -74,7 +73,11 @@ def process_files(all_files, analysis, tone, project_name):
         time.sleep(2)
 
     if analysis:
-        summarizer_input = {fname: {'code': info['code_content']} for fname, info in analysis.items() if 'code_content' in info}
+        summarizer_input = {
+            fname: {'code': info['code_content']}
+            for fname, info in analysis.items() if 'code_content' in info
+        }
+
         if summarizer_input:
             summaries = my_agents.summarizer.summarize_files(summarizer_input, tone=tone)
             for fname, summary_text in summaries.items():
@@ -89,7 +92,6 @@ def process_files(all_files, analysis, tone, project_name):
         progress = st.progress(0, text="Analyzing code...")
         progress.progress(33, text="Summarizing...")
         time.sleep(1)
-
         progress.progress(66, text="Formatting README...")
 
         formatted_text, _, _ = my_agents.formatter.format_readme(
@@ -98,8 +100,8 @@ def process_files(all_files, analysis, tone, project_name):
         readme_md = formatted_text
 
         progress.progress(100, text="Done!")
-
         st.success("README generated!")
+
         st.subheader("README.md Preview")
         st.markdown(readme_md)
 
@@ -112,6 +114,7 @@ def process_files(all_files, analysis, tone, project_name):
             mime="text/markdown"
         )
 
+# --- File Handling Logic ---
 if uploaded_files:
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
@@ -126,5 +129,3 @@ if uploaded_files:
         except Exception as e:
             st.error(f"Failed to process uploaded files: {str(e)}")
             st.code(traceback.format_exc())
-
-
