@@ -11,6 +11,10 @@ import time
 from dotenv import load_dotenv
 load_dotenv()  # Only affects local environment
 
+import subprocess
+subprocess.run(["pip", "show", "openai"])
+
+
 novita_key = st.secrets.get("NOVITA_API_KEY", os.getenv("NOVITA_API_KEY"))
 gemini_key = st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY"))
 
