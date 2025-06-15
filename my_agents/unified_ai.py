@@ -1,24 +1,20 @@
+from openai import OpenAI
 import os
-import openai
+from dotenv import load_dotenv
 
-# Load the Novita key from env or Streamlit secrets
-NOVITA_API_KEY = os.getenv("NOVITA_API_KEY")  # or st.secrets["NOVITA_API_KEY"]
-NOVITA_API_BASE = "https://api.novita.ai/v1"  # or as given in their docs
+load_dotenv()
+NOVITA_API_KEY = os.getenv("NOVITA_API_KEY")
+NOVITA_API_URL = "https://api.novita.ai/v3/openai"
+MODEL_NAME = "deepseek/deepseek-r1-0528"
 
-openai.api_key = NOVITA_API_KEY
-openai.api_base = NOVITA_API_BASE
+client = OpenAI(base_url=NOVITA_API_URL, api_key=NOVITA_API_KEY)
 
-def ai_complete(prompt, model="gpt-3.5-turbo"):
-    try:
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": "You are a helpful AI assistant."},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.7,
-            max_tokens=1024
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Error: {str(e)}"
+def ai_complete(prompt, tone="professional"):
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": f"You are a helpful assistant. Your tone should be {tone}."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
