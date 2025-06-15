@@ -1,12 +1,10 @@
-import os
 import requests
-from dotenv import load_dotenv
+import streamlit as st
 
-load_dotenv()
-
-NOVITA_API_KEY = os.getenv("NOVITA_API_KEY")
+NOVITA_API_KEY = st.secrets["NOVITA_API_KEY"]
 NOVITA_API_URL = "https://api.novita.ai/v3/openai"
 MODEL_NAME = "deepseek/deepseek-r1-0528"
+
 
 def ai_complete(prompt, tone="professional"):
     headers = {
